@@ -36,6 +36,8 @@ import vercelKVDriver from "unstorage/drivers/vercel-kv"
 import { UnstorageAdapter } from "@auth/unstorage-adapter"
 import type { NextAuthConfig } from "next-auth"
 
+import { addSeconds } from "date-fns"
+
 const storage = createStorage({
   driver: process.env.VERCEL
     ? vercelKVDriver({
@@ -106,6 +108,14 @@ const config = {
       return true
     },
     jwt({ token, trigger, session, account }) {
+      if (
+        !token.refreshedAt ||
+        addSeconds(token.refreshedAt, 10) < new Date()
+      ) {
+        console.log("refreshing token....")
+        token.refreshedAt = new Date()
+      }
+
       if (trigger === "update") token.name = session.user.name
       if (account?.provider === "keycloak") {
         return { ...token, accessToken: account.access_token }
@@ -113,6 +123,9 @@ const config = {
       return token
     },
     async session({ session, token }) {
+      if (token?.refreshedAt) {
+        session.refreshedAt = token.refreshedAt
+      }
       if (token?.accessToken) {
         session.accessToken = token.accessToken
       }

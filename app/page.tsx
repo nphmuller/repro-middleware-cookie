@@ -6,6 +6,7 @@ export default async function Index() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>refreshed at: {session?.refreshedAt}</div>
       <h1 className="text-3xl font-bold">NextAuth.js Example</h1>
       <div>
         This is an example site to demonstrate how to use{" "}
